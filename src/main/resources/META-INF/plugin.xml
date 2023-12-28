@@ -1,0 +1,21 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <id>org.jetbrains.plugins.apply2css</id>
+    <name>@applyToCSS use TailwindCSS</name>
+    <vendor>JetBrains</vendor>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>JavaScript</depends>
+    <resource-bundle>messages.MyBundle</resource-bundle>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <intentionAction>
+            <category>CSS</category>
+            <className>org.jetbrains.plugins.apply2css.ApplyToCSSIntentionAction</className>
+        </intentionAction>
+        <projectService serviceImplementation="org.jetbrains.plugins.apply2css.ProjectSettingsService"/>
+        <projectConfigurable
+                instance="org.jetbrains.plugins.apply2css.ApplicationSettingsConfigurable"
+                displayName="ApplyToCSS Setting"/>
+    </extensions>
+</idea-plugin>
