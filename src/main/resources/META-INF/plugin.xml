@@ -9,13 +9,20 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
+        <!--快捷功能-->
         <intentionAction>
             <category>CSS</category>
             <className>org.jetbrains.plugins.apply2css.ApplyToCSSIntentionAction</className>
         </intentionAction>
+
+        <!--設定-->
         <projectService serviceImplementation="org.jetbrains.plugins.apply2css.ProjectSettingsService"/>
         <projectConfigurable
                 instance="org.jetbrains.plugins.apply2css.ApplicationSettingsConfigurable"
                 displayName="ApplyToCSS Setting"/>
+
+        <!--自動完成-->
+        <completion.contributor language="CSS"
+                                implementationClass="org.jetbrains.plugins.apply2css.DemoCompletionContributor"/>
     </extensions>
 </idea-plugin>

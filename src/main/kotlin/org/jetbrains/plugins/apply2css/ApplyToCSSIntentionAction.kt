@@ -25,13 +25,7 @@ class ApplyToCSSIntentionAction : IntentionAction {
 
     // 顯示條件
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
-        val currentLineContent = getDocumentCurrentLineContent(editor)
-        val fileName = file.name
-        val fileExtension = fileName.substringAfterLast('.', "")
-
-        return Regex("@(apply|appl|app|ap|a)").containsMatchIn(currentLineContent) &&
-                (fileExtension == "css" || fileExtension == "scss" ||
-                        fileExtension == "less" || fileExtension == "sass")
+        return Regex("(\\s+)?(@|//)").containsMatchIn(getDocumentCurrentLineContent(editor))
     }
 
     // 執行
@@ -127,7 +121,7 @@ private fun getDocumentCurrentLineContent(editor: Editor): String {
 // 生成 CSS @apply 內容到暫存區
 private fun createTempCSSFileWithContent(content: String): File {
     val tempFilePath = Files.createTempFile("applyTmpContent", null)
-    Files.write(tempFilePath, (".tmp {\n\t${content.replace(Regex(".+@(apply|appl|app|ap|a)"), "@apply").replace(Reg, "")};\n}").toByteArray())
+    Files.write(tempFilePath, (".tmp {\n\t${content.replace(Regex("(\\s+)?(@(apply)?|//)"), "@apply").replace(Reg, "")};\n}").toByteArray())
     return tempFilePath.toFile()
 }
 
