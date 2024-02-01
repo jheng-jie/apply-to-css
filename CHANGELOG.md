@@ -7,3 +7,9 @@
 ### Added
 
 - Add `「Option + Enter」` IntentionAction `「Parse @apply to Pure CSS」`
+
+## [1.0.1] - 2024-02-01
+
+### Fixed
+
+- keywords: md, animate

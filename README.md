@@ -86,3 +86,9 @@ width: 1rem;
 padding-top: 0.1rem;
 padding-bottom: 0.1rem;
 ```
+
+## Build
+
+```sh
+./gradlew buildPlugin
+```
