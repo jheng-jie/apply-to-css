@@ -14,7 +14,7 @@ import java.io.File
 import java.io.InputStreamReader
 import java.nio.file.Files
 
-val Reg = Regex(";${'$'}")
+val Reg = Regex(";${'$'}") // 過濾最後一個";"
 
 class ApplyToCSSIntentionAction : IntentionAction {
     // 顯示的選單名稱
@@ -54,7 +54,6 @@ class ApplyToCSSIntentionAction : IntentionAction {
             if (configPath.isNotEmpty()) {
                 command += " -c ${configPath}"
             }
-            // thisLogger().warn(command)
 
             // 創建 ProcessBuilder
             val builder = ProcessBuilder()
@@ -69,17 +68,35 @@ class ApplyToCSSIntentionAction : IntentionAction {
 
             // 打印每行輸出
             if (lines.isNotEmpty()) {
+                thisLogger().warn("---------------------------")
+                val mutableList = lines.map { item -> item.trim() }.toMutableList()
+                val tmpIndex = mutableList.mapIndexed { index, item ->
+                    if (item == ".tmp {") return@mapIndexed index
+                    else return@mapIndexed -1
+                }.filter { item -> item > -1 }
+
+                tmpIndex.forEach { index ->
+                    thisLogger().warn("forEachIndexed:${index}")
+                    mutableList[index] = "";
+                    mutableList.forEachIndexed { idx, item ->
+                        if (item != "}" || idx <= index) return@forEachIndexed
+                        mutableList[idx] = "";
+                        thisLogger().warn("forEachIndexedReplace")
+                        return@forEach
+                    }
+                }
+
                 // 前面空白數量
                 val leadingSpaces = lineText.takeWhile { it.isWhitespace() }
-                val mutableList = lines.toMutableList()
-                mutableList.removeAt(0) // 刪除第一個元素
-                if (mutableList.isNotEmpty()) {
-                    mutableList.removeAt(mutableList.size - 1) // 刪除最後一個元素
-                }
                 mutableList.forEach { item ->
-                    result.add("${leadingSpaces}${item.trim().replace(Reg, "")};")
-                    // thisLogger().warn(item)
+                    if (item.isEmpty()) return@forEach
+                    if (item.endsWith("}") || item.endsWith("{")) {
+                        result.add("${leadingSpaces}${item.trim().replace(Reg, "")}")
+                    } else {
+                        result.add("${leadingSpaces}${item.trim().replace(Reg, "")};")
+                    }
                 }
+                thisLogger().warn("---------------------------")
             }
 
             // 結果
@@ -93,9 +110,9 @@ class ApplyToCSSIntentionAction : IntentionAction {
                     message = Regex(".+tmp:\\d:\\d:(.*)").replace(errors.joinToString(""), "$1").trim()
                 }
                 Messages.showMessageDialog(project,
-                        message,
-                        "Command Line Error",
-                        Messages.getInformationIcon())
+                    message,
+                    "Command Line Error",
+                    Messages.getInformationIcon())
                 return
             }
 
