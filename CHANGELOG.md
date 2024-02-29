@@ -13,3 +13,10 @@
 ### Fixed
 
 - keywords: md, animate
+
+## [1.0.2] - 2024-02-29
+
+### Added
+
+- Px to Rem `「Option + Enter」` IntentionAction `「Parse px to rem」`
+

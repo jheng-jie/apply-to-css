@@ -22,12 +22,12 @@ import com.intellij.openapi.project.Project
         storages = [Storage("ApplySettingsPlugin.xml")]
 )
 class ProjectSettingsService : PersistentStateComponent<ProjectSettingsService.State> {
-    data class State(var configPath: String = "")
+    data class State(var configPath: String = "", var unitRate: String = "0.0625")
 
     var configurationSchemaKey: String;
 
     init {
-        configurationSchemaKey = "Test";
+        configurationSchemaKey = "Apply2CssSetting";
     }
 
     private var myState = State()
@@ -43,15 +43,21 @@ class ProjectSettingsService : PersistentStateComponent<ProjectSettingsService.S
         set(value) {
             myState.configPath = value
         }
+    var unitRate: String
+        get() = myState.unitRate
+        set(value) {
+            myState.unitRate = value
+        }
 }
 
 
 class ApplicationSettingsComponent {
     val panel: JPanel = JPanel()
     private val configPathTextField = JTextField(1)
+    private val unitRateTextField = JTextField(1)
 
     init {
-        panel.layout = GridLayoutManager(3, 3, Insets(0, 0, 0, 0), -1, -1)
+        panel.layout = GridLayoutManager(5, 3, Insets(0, 0, 0, 0), -1, -1)
 
         // 說明
         val ConfigTitleRow = JPanel()
@@ -61,7 +67,7 @@ class ApplicationSettingsComponent {
 
         // 輸入框
         val label = JLabel("Config Path:")
-        panel.add(label, GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false))
+        panel.add(label, GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false))
         val labeledComponent = LabeledComponent.create(configPathTextField, "")
         panel.add(labeledComponent, GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_NORTHWEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK or GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false))
         // 選擇檔案按鈕
@@ -77,7 +83,6 @@ class ApplicationSettingsComponent {
                 }
             }
             fileChooserDescriptor.title = "Select Config Directory"
-
             val file = FileChooser.chooseFile(fileChooserDescriptor, panel, null, null)
             file?.let {
                 configPathTextField.text = it.path
@@ -85,9 +90,20 @@ class ApplicationSettingsComponent {
         }
         panel.add(browseButton, GridConstraints(1, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false))
 
+        // 單位轉換說明
+        val unitConfigTitleRow = JPanel()
+        val unitDesc = JLabel("Set the ratio of px to rem conversion")
+        unitConfigTitleRow.add(unitDesc)
+        panel.add(unitConfigTitleRow, GridConstraints(2, 0, 1, 2, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK or GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false))
+        // 輸入框
+        val unitLabel = JLabel("Ratio:")
+        panel.add(unitLabel, GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false))
+        val unitLabeledComponent = LabeledComponent.create(unitRateTextField, "")
+        panel.add(unitLabeledComponent, GridConstraints(3, 1, 1, 2, GridConstraints.ANCHOR_NORTHWEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK or GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false))
+
         // 第三行，撐滿剩餘空間
         val emptyPanel = JPanel()
-        panel.add(emptyPanel, GridConstraints(2, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK or GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK or GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false))
+        panel.add(emptyPanel, GridConstraints(4, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK or GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK or GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false))
     }
 
 
@@ -95,6 +111,12 @@ class ApplicationSettingsComponent {
         get() = configPathTextField.text
         set(value) {
             configPathTextField.text = value
+        }
+
+    var unitRate: String
+        get() = unitRateTextField.text
+        set(value) {
+            unitRateTextField.text = value
         }
 }
 
@@ -110,8 +132,9 @@ class ApplicationSettingsConfigurable(private val project: Project) : Configurab
 
     override fun isModified(): Boolean {
         val settings = project.getService(ProjectSettingsService::class.java)
-        val modified = mySettingsComponent?.configPath != settings.configPath
-        return modified
+        val configModified = mySettingsComponent?.configPath != settings.configPath
+        val unitModified = mySettingsComponent?.unitRate != settings.unitRate
+        return configModified || unitModified
     }
 
     override fun apply() {
@@ -119,11 +142,15 @@ class ApplicationSettingsConfigurable(private val project: Project) : Configurab
         mySettingsComponent?.configPath?.let {
             settings.configPath = it
         }
+        mySettingsComponent?.unitRate?.let {
+            settings.unitRate = it
+        }
     }
 
     override fun reset() {
         val settings = project.getService(ProjectSettingsService::class.java)
         mySettingsComponent?.configPath = settings.configPath
+        mySettingsComponent?.unitRate = settings.unitRate
     }
 
     override fun disposeUIResources() {

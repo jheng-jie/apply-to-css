@@ -38,13 +38,11 @@ class ApplyToCSSIntentionAction : IntentionAction {
         // 內容暫存到檔案中
         val lineText = getDocumentCurrentLineContent(editor)
         val tmpFile = createTempCSSFileWithContent(lineText)
-        // thisLogger().warn(tmpFile.path)
 
         try {
             // config
             val settings = project.getService(ProjectSettingsService::class.java)
             val configPath = settings.configPath
-            // thisLogger().warn(configPath)
 
             // 要執行的命令
             val interpreterManager = NodeJsInterpreterManager.getInstance(project)
@@ -68,7 +66,6 @@ class ApplyToCSSIntentionAction : IntentionAction {
 
             // 打印每行輸出
             if (lines.isNotEmpty()) {
-                thisLogger().warn("---------------------------")
                 val mutableList = lines.map { item -> item.trim() }.toMutableList()
                 val tmpIndex = mutableList.mapIndexed { index, item ->
                     if (item == ".tmp {") return@mapIndexed index
@@ -76,12 +73,10 @@ class ApplyToCSSIntentionAction : IntentionAction {
                 }.filter { item -> item > -1 }
 
                 tmpIndex.forEach { index ->
-                    thisLogger().warn("forEachIndexed:${index}")
                     mutableList[index] = "";
                     mutableList.forEachIndexed { idx, item ->
                         if (item != "}" || idx <= index) return@forEachIndexed
                         mutableList[idx] = "";
-                        thisLogger().warn("forEachIndexedReplace")
                         return@forEach
                     }
                 }
@@ -90,13 +85,15 @@ class ApplyToCSSIntentionAction : IntentionAction {
                 val leadingSpaces = lineText.takeWhile { it.isWhitespace() }
                 mutableList.forEach { item ->
                     if (item.isEmpty()) return@forEach
+                    // 括號後面不需要分號
                     if (item.endsWith("}") || item.endsWith("{")) {
                         result.add("${leadingSpaces}${item.trim().replace(Reg, "")}")
-                    } else {
+                    }
+                    // 其他屬性後面需要分號
+                    else {
                         result.add("${leadingSpaces}${item.trim().replace(Reg, "")};")
                     }
                 }
-                thisLogger().warn("---------------------------")
             }
 
             // 結果

@@ -9,10 +9,16 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <!--快捷功能-->
+        <!--@apply 快捷功能-->
         <intentionAction>
             <category>CSS</category>
             <className>org.jetbrains.plugins.apply2css.ApplyToCSSIntentionAction</className>
+        </intentionAction>
+
+        <!--單位自動切換-->
+        <intentionAction>
+            <category>CSS</category>
+            <className>org.jetbrains.plugins.apply2css.Px2RemIntentionAction</className>
         </intentionAction>
 
         <!--設定-->
